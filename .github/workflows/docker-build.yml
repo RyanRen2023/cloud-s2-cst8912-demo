@@ -1,4 +1,4 @@
-name: Build Docker Image on Push
+name: Build and Push Docker Image
 
 on:
   push:
@@ -22,18 +22,16 @@ jobs:
           cd app
           npm ci
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build Docker image
         run: |
-          docker build -t app-demo:${{ github.sha }} ./app
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:${{ github.sha }} ./app
 
-      # Optionally, add steps to push to a registry here
-      # - name: Log in to registry
-      #   uses: docker/login-action@v3
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      # - name: Push Docker image
-      #   run: |
-      #     docker tag app-demo:${{ github.sha }} ghcr.io/<owner>/<repo>/app-demo:${{ github.sha }}
-      #     docker push ghcr.io/<owner>/<repo>/app-demo:${{ github.sha }} 
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:${{ github.sha }} 
