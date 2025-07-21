@@ -1,0 +1,32 @@
+<div class="header">
+    <div class="user-info">
+        <div class="avatar">👤</div>
+        <div>
+            <h1>Welcome, {{username}}!</h1>
+            <p>📍 Access from: {{country}}</p>
+        </div>
+    </div>
+    <div>
+        {{roleBadges}}
+    </div>
+</div>
+<div class="content">
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>🔐 Vault Secret</h3>
+            <p><strong>Password:</strong> {{secret}}</p>
+        </div>
+        <div class="card">
+            <h3>🔑 Authentication Status</h3>
+            <p><strong>Token Expires:</strong> {{tokenExpires}}</p>
+            <p><strong>Roles:</strong> {{roles}}</p>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <h3 style="margin-bottom: 1rem; color: #2c3e50;">Quick Actions</h3>
+        {{adminButtons}}
+        {{userButtons}}
+        <a href="/logout" class="btn btn-danger">🚪 Logout</a>
+    </div>
+</div> 

@@ -1,3 +1,15 @@
 keycloak/
 app/node_modules/
 app/.env
+app/.env.decrypted
+app/.env.enc
+app/gpg-batch.conf
+app/my-public.key
+app/private-key.asc
+app/private-key.base64
+app/private.key
+diagrams/
+ppt.md
+
+
+
