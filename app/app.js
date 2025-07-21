@@ -5,7 +5,14 @@ import passport from 'passport';
 import ip from 'express-ip';
 import authService from './services/authService.js';
 import PageRoutes from './routes/pageRoutes.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config();
 const app = express();
 
 // IP middleware setup
@@ -26,13 +33,19 @@ app.use((req, res, next) => {
     next();
 });
 
+// 静态资源目录，必须放在所有路由和中间件之前
+app.use('/static', express.static(path.join(__dirname, 'views')));
+
 // Environment variables with defaults
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:8080';
 const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM || 'security-demo';
 const KEYCLOAK_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID || 'demo-client';
-const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET || 'p2TG8mocRTMUYPSLRrPKrwF4fa661AqE';
+const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET;
+if (!KEYCLOAK_CLIENT_SECRET) {
+    throw new Error('KEYCLOAK_CLIENT_SECRET environment variable is required but not set.');
+}
 const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3000';
 const APP_CALLBACK_URL = process.env.APP_CALLBACK_URL || 'http://localhost:3000/callback';
 const VAULT_URL = process.env.VAULT_URL || 'http://127.0.0.1:8200';
@@ -102,12 +115,13 @@ async function initializeKeycloak() {
             }),
             (req, res) => {
                 // Store tokenSet in session
+                console.log('already logged in: req.user', req.user);
                 req.session.tokenSet = req.user.tokenSet;
                 const username = req.user.preferred_username;
                 const country = userCountryMap[username] || 'Unknown';
 
                 req.session.country = country;  // Store in session
-                res.redirect('/');
+                res.redirect('/dashboard');
             }
         );
 

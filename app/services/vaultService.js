@@ -1,4 +1,4 @@
-const vault = require('node-vault');
+import vault from 'node-vault';
 
 class VaultService {
     constructor(vaultUrl, vaultToken) {
