@@ -321,3 +321,12 @@ sops --input-type dotenv --output-type dotenv --decrypt .env.enc > .env.decrypte
 - GPG keys can be created and used locally or in CI.
 - SOPS supports field-level encryption with GPG.
 - Key trust and loopback pinentry are required for non-interactive use.
+
+
+```bash
+
+docker pull xihairen/app-demo:latest
+docker run --rm -p 3000:3000 xihairen/app-demo:latest
+
+docker run --pull always --rm -p 3000:3000 xihairen/app-demo:latest
+```
