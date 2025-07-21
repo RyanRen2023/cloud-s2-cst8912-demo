@@ -113,14 +113,45 @@ async function initializeKeycloak() {
             passport.authenticate('oidc', {
                 failureRedirect: '/login',
             }),
-            (req, res) => {
+            async (req, res) => {
                 // Store tokenSet in session
                 console.log('already logged in: req.user', req.user);
                 req.session.tokenSet = req.user.tokenSet;
                 const username = req.user.preferred_username;
-                const country = userCountryMap[username] || 'Unknown';
+                const region = req.user.region || 'Unknown';
+                const roles = req.user.resource_access.demo-client.roles;
+                let vaultRole = 'default';
 
-                req.session.country = country;  // Store in session
+                if (roles.includes('admin')) {
+                    vaultRole = 'admin';
+                } else if (roles.includes('user')) {
+                    vaultRole = 'user';
+                }
+
+                req.session.country = region;  // Store in session
+                req.session.username = username;
+                const jwt = req.user.tokenSet.id_token || req.user.tokenSet.access_token;
+
+
+
+
+                const vaultResponse = await fetch(`${process.env.VAULT_URL}/v1/auth/oidc/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        role: vaultRole,
+                        jwt: jwt,
+                    }),
+                });
+                const result = await vaultResponse.json();
+
+                if (!vaultResponse.ok) {
+                    console.error('Vault login failed:', result);
+                    return res.status(500).send('Vault login failed');
+                }
+                req.session.vaultToken = result.auth.client_token;
+                console.log('Vault login successful:', result);
+                
                 res.redirect('/dashboard');
             }
         );

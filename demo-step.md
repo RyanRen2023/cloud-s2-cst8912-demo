@@ -43,6 +43,27 @@ This guide walks you through implementing the code components of the demo, inclu
    vault login myroot
    vault secrets enable -path=secret kv
    vault kv put secret/demo password=123456
+
+
+
+vault auth enable oidc
+vault auth enable -path=keycloak oidc
+
+
+  vault write auth/oidc/config \
+  oidc_discovery_url="http://192.168.12.6:8080/realms/security-demo" \
+  oidc_client_id="vault" \
+  oidc_client_secret="3VHHw4BlZscO6ba6qkgdpLEnZoW5TkVh" \
+  default_role="default"
+
+
+  vault write auth/oidc/role/admin \
+    bound_audiences="vault" \
+    allowed_redirect_uris="http://192.168.12.6:3000/callback" \
+    user_claim="preferred_username" \
+    role_type="oidc" \
+    groups_claim="roles" \
+    policies="admin-policy"
    ```
 
 
