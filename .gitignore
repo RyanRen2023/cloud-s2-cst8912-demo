@@ -2,7 +2,6 @@ keycloak/
 app/node_modules/
 app/.env
 app/.env.decrypted
-app/.env.enc
 app/gpg-batch.conf
 app/my-public.key
 app/private-key.asc
