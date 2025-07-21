@@ -24,15 +24,25 @@ jobs:
 
       - name: Install SOPS
         run: |
-          sudo apt-get update && sudo apt-get install -y wget
+          sudo apt-get update && sudo apt-get install -y wget gnupg
           wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64 -O /usr/local/bin/sops
           chmod +x /usr/local/bin/sops
 
+      - name: Import GPG Private Key
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "$GPG_PRIVATE_KEY_QA" | base64 -d > private-key.asc
+          gpg --batch --yes --pinentry-mode loopback --import private-key.asc
+          gpg --with-colons --fingerprint | awk -F: '/^fpr:/ {print $10 ":6:"}' | gpg --import-ownertrust
+        env:
+          GPG_PRIVATE_KEY_QA: ${{ secrets.GPG_PRIVATE_KEY_QA }}
+
       - name: Decrypt .env.enc
         run: |
-          sops -d app/.env.enc > app/.env
-        env:
-          SOPS_AGE_KEY: ${{ secrets.GPG_PRIVATE_KEY_QA }}
+          sops --input-type dotenv --output-type dotenv --decrypt app/.env.enc > app/.env
 
 
       - name: Log in to Docker Hub
