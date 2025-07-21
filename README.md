@@ -44,8 +44,8 @@ This guide walks you through implementing the code components of the demo, inclu
    vault secrets enable -path=secret kv
    vault kv put secret/demo password=123456
 
-export VAULT_ADDR=http://192.168.1.114:8200
 
+3. authentication with oidc
 vault auth enable oidc
 vault auth enable -path=keycloak oidc
 
@@ -53,13 +53,8 @@ vault auth enable -path=keycloak oidc
   vault write auth/oidc/config \
   oidc_discovery_url="http://192.168.12.6:8080/realms/security-demo" \
   oidc_client_id="vault" \
-  oidc_client_secret="UCHsBVkf30vIYGQrD7M7Zl2lpxNDOvQA" \
+  oidc_client_secret="3VHHw4BlZscO6ba6qkgdpLEnZoW5TkVh" \
   default_role="default"
-
-
-
-
-  
 
 
   vault write auth/oidc/role/admin \
@@ -71,31 +66,6 @@ vault auth enable -path=keycloak oidc
     policies="admin-policy"
    ```
 
-
- Sage
-  vault write auth/oidc/config \
-  oidc_discovery_url="http://192.168.1.114:8080/realms/security-demo" \
-  oidc_client_id="vault" \
-  oidc_client_secret="UCHsBVkf30vIYGQrD7M7Zl2lpxNDOvQA" \
-  default_role="default"
-
-
-  vault write auth/oidc/config \
-    oidc_discovery_url="http://192.168.1.114:8080/realms/vault-realm" \
-    oidc_client_id="vault" \
-    oidc_client_secret="UCHsBVkf30vIYGQrD7M7Zl2lpxNDOvQA" \
-    default_role="vault-role"
-
-
-
-
-    vault write auth/oidc/role/admin \
-    bound_audiences="vault" \
-    allowed_redirect_uris="http://192.168.1.114:3000/callback" \
-    user_claim="preferred_username" \
-    role_type="oidc" \
-    groups_claim="roles" \
-    policies="admin-policy"
 
 ---
 
