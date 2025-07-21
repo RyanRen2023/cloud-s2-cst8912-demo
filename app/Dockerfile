@@ -11,7 +11,7 @@ RUN npm ci --only=production
 # Copy the rest of the app source code
 COPY . .
 
-RUN echo "==== ENV FILE ====" && cat /app/.env
+RUN echo "==== ENV FILE ====" && cat .env
 
 # Use a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
