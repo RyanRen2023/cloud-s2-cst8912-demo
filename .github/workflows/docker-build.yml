@@ -44,6 +44,8 @@ jobs:
         run: |
           sops --input-type dotenv --output-type dotenv --decrypt app/.env.enc > app/.env
 
+      - name: Print decrypted .env file (debug only)
+        run: cat app/.env
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -53,8 +55,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:${{ github.sha }} ./app
+          docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:${{ github.sha }} -t ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:latest ./app
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:${{ github.sha }} 
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-demo:latest 
