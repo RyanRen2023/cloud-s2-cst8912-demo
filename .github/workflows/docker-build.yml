@@ -22,6 +22,19 @@ jobs:
           cd app
           npm ci
 
+      - name: Install SOPS
+        run: |
+          sudo apt-get update && sudo apt-get install -y wget
+          wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64 -O /usr/local/bin/sops
+          chmod +x /usr/local/bin/sops
+
+      - name: Decrypt .env.enc
+        run: |
+          sops -d app/.env.enc > app/.env
+        env:
+          SOPS_AGE_KEY: ${{ secrets.GPG_PRIVATE_KEY_QA }}
+
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
