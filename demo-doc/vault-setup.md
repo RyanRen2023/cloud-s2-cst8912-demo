@@ -27,7 +27,7 @@ vault login myroot
 > If Vault is running on a remote IP:
 
 ```bash
-export VAULT_ADDR=http://192.168.1.114:8200
+export VAULT_ADDR=http://10.70.176.132:8200
 ```
 
 ---
@@ -60,19 +60,19 @@ vault auth enable -path=keycloak oidc
 ```bash
 
 vault write auth/oidc/config \
-  oidc_discovery_url="http://192.168.1.114:8080/realms/security-demo" \
+  oidc_discovery_url="http://10.70.176.132:8080/realms/security-demo" \
   oidc_client_id="vault" \
   oidc_client_secret="UCHsBVkf30vIYGQrD7M7Zl2lpxNDOvQA" \ 
   default_role="admin"
 
 vault write auth/oidc/config \
-  oidc_discovery_url="http://192.168.1.114:8080/realms/security-demo" \
+  oidc_discovery_url="http://10.70.176.132:8080/realms/security-demo" \
   oidc_client_id="vault" \
   oidc_client_secret="UCHsBVkf30vIYGQrD7M7Zl2lpxNDOvQA" \
   default_role="admin"
 
 
-curl -X POST http://192.168.1.114:8200/v1/auth/jwt/login \
+curl -X POST http://10.70.176.132:8200/v1/auth/jwt/login \
   -H "Content-Type: application/json" \
   -d '{"role": "jwt-role", "jwt": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJYcnJvSmdZdG9wV3NjQk15bk9reVhZLUVieno4MGctTExxMmQwZjFRbzJNIn0.eyJleHAiOjE3NTMxMTk3MzYsImlhdCI6MTc1MzExOTQzNiwiYXV0aF90aW1lIjoxNzUzMTE5NDM2LCJqdGkiOiIxYTM4ZTBjOC00ZTQ4LWM2NWItODliMi1lNTQ5NGZiZDhhZTYiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL3NlY3VyaXR5LWRlbW8iLCJhdWQiOlsiZGVtby1jbGllbnQiLCJ2YXVsdCJdLCJzdWIiOiI4ZDUzMThjMS1hN2ExLTRiYTItOGMzZS1kOThmMWYyMzAzMzciLCJ0eXAiOiJJRCIsImF6cCI6ImRlbW8tY2xpZW50Iiwic2lkIjoiNDYwZjlmNTItMzFkNC00YjI3LTlmYTEtMTQ5ODg3MTc3MzgxIiwiYXRfaGFzaCI6Ikh5SEo0T20tQ3ZLSVhOZlRseFBaT1EiLCJhY3IiOiIxIiwicmVzb3VyY2VfYWNjZXNzIjp7ImRlbW8tY2xpZW50Ijp7InJvbGVzIjpbImFkbWluIl19fSwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiWGloYWkgUmVuIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWRtaW51c2VyIiwiZ2l2ZW5fbmFtZSI6IlhpaGFpIiwiZmFtaWx5X25hbWUiOiJSZW4iLCJlbWFpbCI6ImFkbWludXNlckBnbWFpbC5jb20ifQ.PZlYRQfX47onElsQ7bxCrvnQR_0A_117qN1Eb4INghEzH_BzdaQrT0sS8J6NsgEjbMWNVYQQIKIomYiW-2gN2CFZnKfSJI5iVxxXF7kMomF04peAyTY5_0ZDUmh629_LWHfbBywd8bcz-4qEnzng4MugEJq9b4c5nVxQDR_8FRhoEpX-sgSzfdJRqGbuDGg4jX2zHesg0NUKzfbN-SvP7WX551RkF-DEhtlTnYr6HS_thsSQsg5BrP1gLtwtjsOwLDHSetJjgvX86lQUHw8Qr8tDIOBC4S_8em_oZVCblx13L2o7fS8vE6xPsQcjWThh4jPD0bMuhzGGV0oughN53g"}'
 ```
@@ -215,7 +215,7 @@ vault write auth/oidc/role/user-ca \
 
   ```
   http://localhost:8250/oidc/callback
-  http://192.168.1.114:8250/oidc/callback    // replace with your host IP
+  http://10.70.176.132:8250/oidc/callback    // replace with your host IP
   ```
 
 ### 🔹 Role:

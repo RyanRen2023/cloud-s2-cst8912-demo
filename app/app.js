@@ -8,6 +8,8 @@ import PageRoutes from './routes/pageRoutes.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import vault from 'node-vault';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -108,6 +110,11 @@ async function initializeKeycloak() {
             response_types: ['code'],
         });
 
+        const vaultClient = vault({
+            endpoint: VAULT_URL, // Vault
+            token: VAULT_TOKEN,  // Vault Token
+        });
+
         passport.use('oidc', new Strategy({ client: appClient }, (tokenSet, userinfo, done) => {
             userinfo.tokenSet = tokenSet;
             return done(null, userinfo);
@@ -149,30 +156,30 @@ async function initializeKeycloak() {
                 console.log('jwt:', jwt);
 
 
-                const vaultResponse = await fetch(`${process.env.VAULT_URL}/v1/auth/oidc/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        role: 'admin',
-                        jwt: jwt,
-                    }),
-                });
-                let result;
-                try {
-                    const text = await vaultResponse.text(); 
-                    console.log('Vault response:', text);
-                    result = text ? JSON.parse(text) : {};
-                } catch (err) {
-                    console.error('Failed to parse Vault response as JSON:', err);
-                    return res.status(500).send('Vault response parsing failed');
-                }
+                // const vaultResponse = await fetch(`${process.env.VAULT_URL}/v1/auth/oidc/login`, {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({
+                //         role: 'admin',
+                //         jwt: jwt,
+                //     }),
+                // });
+                // let result;
+                // try {
+                //     const text = await vaultResponse.text();
+                //     console.log('Vault response:', text);
+                //     result = text ? JSON.parse(text) : {};
+                // } catch (err) {
+                //     console.error('Failed to parse Vault response as JSON:', err);
+                //     return res.status(500).send('Vault response parsing failed');
+                // }
 
-                if (!vaultResponse.ok) {
-                    console.error('Vault login failed:', result);
-                    return res.status(500).send('Vault login failed');
-                }
-                req.session.vaultToken = result.auth.client_token;
-                console.log('Vault login successful:', result);
+                // if (!vaultResponse.ok) {
+                //     console.error('Vault login failed:', result);
+                //     return res.status(500).send('Vault login failed');
+                // }
+                // req.session.vaultToken = result.auth.client_token;
+                // console.log('Vault login successful:', result);
 
                 res.redirect('/dashboard');
             }
