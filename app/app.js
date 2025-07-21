@@ -41,15 +41,22 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:8080';
 const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM || 'security-demo';
-const KEYCLOAK_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID || 'demo-client';
-const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET;
-if (!KEYCLOAK_CLIENT_SECRET) {
-    throw new Error('KEYCLOAK_CLIENT_SECRET environment variable is required but not set.');
+const APP_CLIENT_ID = process.env.APP_CLIENT_ID || 'demo-client';
+const APP_CLIENT_SECRET = process.env.APP_CLIENT_SECRET;
+if (!APP_CLIENT_SECRET) {
+    throw new Error('APP_CLIENT_SECRET environment variable is required but not set.');
 }
 const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3000';
 const APP_CALLBACK_URL = process.env.APP_CALLBACK_URL || 'http://localhost:3000/callback';
+const VAULT_CLIENT_ID = process.env.VAULT_CLIENT_ID || 'vault';
+const VAULT_CLIENT_SECRET = process.env.VAULT_CLIENT_SECRET;
+if (!VAULT_CLIENT_SECRET) {
+    throw new Error('VAULT_CLIENT_SECRET environment variable is required but not set.');
+}
 const VAULT_URL = process.env.VAULT_URL || 'http://127.0.0.1:8200';
+const VAULT_CALLBACK_URL = process.env.VAULT_CALLBACK_URL || 'http://localhost:8250/oidc/callback';
 const VAULT_TOKEN = process.env.VAULT_TOKEN || 'myroot';
+
 const SESSION_SECRET = process.env.SESSION_SECRET || 'demo';
 const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE) || 86400000;
 const ALLOWED_ROLES = process.env.ALLOWED_ROLES?.split(',') || ['admin', 'user'];
@@ -60,10 +67,13 @@ const config = {
     NODE_ENV,
     KEYCLOAK_URL,
     KEYCLOAK_REALM,
-    KEYCLOAK_CLIENT_ID,
-    KEYCLOAK_CLIENT_SECRET,
+    APP_CLIENT_ID,
+    APP_CLIENT_SECRET,
     APP_BASE_URL,
     APP_CALLBACK_URL,
+    VAULT_CLIENT_ID,
+    VAULT_CLIENT_SECRET,
+    VAULT_CALLBACK_URL,
     VAULT_URL,
     VAULT_TOKEN,
     SESSION_SECRET,
@@ -72,9 +82,9 @@ const config = {
 };
 
 // Configure session
-app.use(session({ 
-    secret: SESSION_SECRET, 
-    resave: false, 
+app.use(session({
+    secret: SESSION_SECRET,
+    resave: false,
     saveUninitialized: true,
     cookie: {
         maxAge: SESSION_MAX_AGE,
@@ -91,14 +101,14 @@ app.use(passport.session());
 async function initializeKeycloak() {
     try {
         const keycloakIssuer = await Issuer.discover(`${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}`);
-        const client = new keycloakIssuer.Client({
-            client_id: KEYCLOAK_CLIENT_ID,
-            client_secret: KEYCLOAK_CLIENT_SECRET,
+        const appClient = new keycloakIssuer.Client({
+            client_id: APP_CLIENT_ID,
+            client_secret: APP_CLIENT_SECRET,
             redirect_uris: [APP_CALLBACK_URL],
             response_types: ['code'],
         });
 
-        passport.use('oidc', new Strategy({ client }, (tokenSet, userinfo, done) => {
+        passport.use('oidc', new Strategy({ client: appClient }, (tokenSet, userinfo, done) => {
             userinfo.tokenSet = tokenSet;
             return done(null, userinfo);
         }));
@@ -119,31 +129,43 @@ async function initializeKeycloak() {
                 req.session.tokenSet = req.user.tokenSet;
                 const username = req.user.preferred_username;
                 const region = req.user.region || 'Unknown';
-                const roles = req.user.resource_access.demo-client.roles;
-                let vaultRole = 'default';
 
-                if (roles.includes('admin')) {
-                    vaultRole = 'admin';
-                } else if (roles.includes('user')) {
-                    vaultRole = 'user';
+                const roles = req.user.resource_access?.[APP_CLIENT_ID]?.roles || [];
+
+                let vaultRole = 'default';
+                if (roles.includes('admin') && region === 'US') {
+                    vaultRole = 'admin-us';
+                } else if (roles.includes('admin') && region === 'CA') {
+                    vaultRole = 'admin-ca';
+                } else if (roles.includes('user') && region === 'US') {
+                    vaultRole = 'user-us';
+                } else if (roles.includes('user') && region === 'CA') {
+                    vaultRole = 'user-ca';
                 }
 
                 req.session.country = region;  // Store in session
                 req.session.username = username;
                 const jwt = req.user.tokenSet.id_token || req.user.tokenSet.access_token;
-
-
+                console.log('jwt:', jwt);
 
 
                 const vaultResponse = await fetch(`${process.env.VAULT_URL}/v1/auth/oidc/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        role: vaultRole,
+                        role: 'admin',
                         jwt: jwt,
                     }),
                 });
-                const result = await vaultResponse.json();
+                let result;
+                try {
+                    const text = await vaultResponse.text(); 
+                    console.log('Vault response:', text);
+                    result = text ? JSON.parse(text) : {};
+                } catch (err) {
+                    console.error('Failed to parse Vault response as JSON:', err);
+                    return res.status(500).send('Vault response parsing failed');
+                }
 
                 if (!vaultResponse.ok) {
                     console.error('Vault login failed:', result);
@@ -151,7 +173,7 @@ async function initializeKeycloak() {
                 }
                 req.session.vaultToken = result.auth.client_token;
                 console.log('Vault login successful:', result);
-                
+
                 res.redirect('/dashboard');
             }
         );
@@ -177,7 +199,7 @@ pageRoutes.setupRoutes(app);
 // Initialize the application
 async function startApp() {
     await initializeKeycloak();
-    
+
     app.listen(PORT, () => {
         console.log(`🚀 Server started at ${APP_BASE_URL}`);
         console.log(`📊 Environment: ${NODE_ENV}`);

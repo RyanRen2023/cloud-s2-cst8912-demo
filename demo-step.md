@@ -81,10 +81,39 @@ vault auth enable -path=keycloak oidc
 
 
   vault write auth/oidc/config \
-    oidc_discovery_url="http://192.168.1.114:8080/realms/vault-realm" \
+    oidc_discovery_url="http://192.168.1.114:8080/realms/security-demo" \
     oidc_client_id="vault" \
     oidc_client_secret="UCHsBVkf30vIYGQrD7M7Zl2lpxNDOvQA" \
     default_role="vault-role"
+
+
+    vault write auth/oidc/role/vault-role \
+    bound_audiences="vault" \
+    allowed_redirect_uris="http://localhost:8250/oidc/callback" \
+    user_claim="preferred_username" \
+    groups_claim="groups" \
+    policies="default" \
+    ttl="1h"
+
+
+    vault write auth/oidc/role/vault-role \
+    bound_audiences="vault" \
+    allowed_redirect_uris="http://localhost:8250/oidc/callback" \
+    user_claim="preferred_username" \
+    groups_claim="realm_access.roles" \
+    bound_claims.realm_access.roles=admin \
+    policies="admin" \
+    ttl="1h"
+
+
+    vault write auth/oidc/role/vault-role \
+    bound_audiences="vault" \
+    allowed_redirect_uris="http://localhost:8250/oidc/callback" \
+    user_claim="preferred_username" \
+    groups_claim="roles" \
+    bound_claims.roles=admin \
+    policies="admin" \
+    ttl="1h"
 
 
 

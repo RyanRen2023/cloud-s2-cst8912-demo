@@ -23,8 +23,8 @@ class PageRoutes {
         }
 
         // Check role access
-        const roles = authService.getUserRoles(req.user, this.config.KEYCLOAK_CLIENT_ID);
-        const hasAccess = authService.hasRequiredRoles(req.user, this.config.KEYCLOAK_CLIENT_ID, this.config.ALLOWED_ROLES);
+        const roles = authService.getUserRoles(req.user, this.config.APP_CLIENT_ID);
+        const hasAccess = authService.hasRequiredRoles(req.user, this.config.APP_CLIENT_ID, this.config.ALLOWED_ROLES);
         
         if (!hasAccess) {
             return pageController.renderAccessDenied(req, res);
@@ -58,7 +58,7 @@ class PageRoutes {
             }
 
             // Check role access
-            const hasAccess = authService.hasRequiredRoles(req.user, this.config.KEYCLOAK_CLIENT_ID, this.config.ALLOWED_ROLES);
+            const hasAccess = authService.hasRequiredRoles(req.user, this.config.APP_CLIENT_ID, this.config.ALLOWED_ROLES);
             if (!hasAccess) {
                 return pageController.renderAccessDenied(req, res);
             }
@@ -76,7 +76,7 @@ class PageRoutes {
 
     // Admin panel route
     admin(req, res) {
-        const isAdmin = authService.isAdmin(req.user, this.config.KEYCLOAK_CLIENT_ID);
+        const isAdmin = authService.isAdmin(req.user, this.config.APP_CLIENT_ID);
         
         if (!isAdmin) {
             return pageController.renderAdminAccessDenied(req, res);
@@ -87,8 +87,8 @@ class PageRoutes {
 
     // User dashboard route
     user(req, res) {
-        const isUser = authService.isUser(req.user, this.config.KEYCLOAK_CLIENT_ID);
-        const isAdmin = authService.isAdmin(req.user, this.config.KEYCLOAK_CLIENT_ID);
+        const isUser = authService.isUser(req.user, this.config.APP_CLIENT_ID);
+        const isAdmin = authService.isAdmin(req.user, this.config.APP_CLIENT_ID);
         
         if (!isUser && !isAdmin) {
             return pageController.renderUserAccessDenied(req, res);
@@ -100,7 +100,7 @@ class PageRoutes {
     // System secrets route
     async secrets(req, res) {
         try {
-            const isAdmin = authService.isAdmin(req.user, this.config.KEYCLOAK_CLIENT_ID);
+            const isAdmin = authService.isAdmin(req.user, this.config.APP_CLIENT_ID);
             
             if (!isAdmin) {
                 return pageController.renderAdminAccessDenied(req, res);
@@ -130,7 +130,7 @@ class PageRoutes {
     // Setup routes
     setupRoutes(app) {
         // Store config in app locals for access in controllers
-        app.locals.KEYCLOAK_CLIENT_ID = this.config.KEYCLOAK_CLIENT_ID;
+        app.locals.APP_CLIENT_ID = this.config.APP_CLIENT_ID;
         
         // Page routes
         app.get('/', this.welcome.bind(this));

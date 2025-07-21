@@ -13,7 +13,7 @@ class PageController {
 
     // Render dashboard for logged in users
     renderDashboard(req, res, secret) {
-        const roles = req.user?.resource_access?.[req.app.locals.KEYCLOAK_CLIENT_ID]?.roles || [];
+        const roles = req.user?.resource_access?.[req.app.locals.APP_CLIENT_ID]?.roles || [];
         const isAdmin = roles.includes('admin');
         const isUser = roles.includes('user');
         

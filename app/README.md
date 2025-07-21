@@ -21,8 +21,8 @@ Edit the `.env` file and set the following configurations:
 #### Keycloak Configuration
 - `KEYCLOAK_URL`: Keycloak server address
 - `KEYCLOAK_REALM`: Keycloak realm name
-- `KEYCLOAK_CLIENT_ID`: Client ID
-- `KEYCLOAK_CLIENT_SECRET`: Client secret
+- `APP_CLIENT_ID`: Client ID
+- `APP_CLIENT_SECRET`: Client secret
 
 #### Application URL
 - `APP_BASE_URL`: Application base URL
